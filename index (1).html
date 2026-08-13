@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UP Roadways — an ambient night-bus radio</title>
+<meta name="description" content="Pull up a seat on the last row: 90s Hindi film songs playing on loop, the way they did on every night bus out of UP.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Mukta:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night-sky-top:#0c1730;
+    --night-sky-bot:#2c3f66;
+    --bus-red:#b3312c;
+    --bus-red-dark:#7e211d;
+    --bus-cream:#f2e3c6;
+    --amber:#f3a63d;
+    --amber-soft:#f7c877;
+    --ink:#241810;
+    --paper:#f5ecd7;
+    --paper-dim:#e7d9b8;
+    --star:#fff8e0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    min-height:100vh;
+    font-family:'Mukta',sans-serif;
+    color:var(--paper);
+    background:linear-gradient(180deg,var(--night-sky-top) 0%, var(--night-sky-bot) 55%, #3a2f3a 78%, #1a1210 100%);
+    overflow-x:hidden;
+    position:relative;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+
+  /* ---------- background scene ---------- */
+  .scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .stars{position:absolute;inset:0;}
+  .star{position:absolute;width:2px;height:2px;background:var(--star);border-radius:50%;animation:twinkle 3.5s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.25;}50%{opacity:1;}}
+  .moon{position:absolute;top:6%;right:10%;width:64px;height:64px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff6dd, #f3d98b 60%, #d8b95e 100%);
+    box-shadow:0 0 40px 10px rgba(243,217,139,.25);}
+  .hills{position:absolute;bottom:26vh;left:0;width:100%;height:22vh;
+    background:linear-gradient(180deg,transparent,rgba(0,0,0,.35));
+    clip-path:polygon(0% 100%,0% 55%,10% 45%,22% 60%,35% 40%,50% 58%,64% 38%,78% 55%,90% 42%,100% 52%,100% 100%);
+    background-color:#111a2e;opacity:.8;}
+  .road{position:absolute;bottom:0;left:0;width:100%;height:26vh;background:#0e0d10;
+    box-shadow:inset 0 12px 24px rgba(0,0,0,.5);}
+  .road::before{content:"";position:absolute;top:14%;left:0;width:100%;height:6px;
+    background:repeating-linear-gradient(90deg,var(--paper-dim) 0 40px, transparent 40px 80px);
+    opacity:.55;}
+  .mile-marker{position:absolute;bottom:9vh;left:6%;width:38px;text-align:center;font-family:'Teko',sans-serif;}
+  .mile-marker .post{width:6px;height:70px;background:#8a8478;margin:0 auto;}
+  .mile-marker .sign{background:var(--bus-red);color:var(--paper);padding:4px 6px;font-size:.85rem;
+    line-height:1.1;border:2px solid var(--paper);transform:translateY(-2px);}
+
+  .dhaba{position:absolute;bottom:8vh;right:4%;width:min(38vw,260px);}
+  .dhaba .tent{width:100%;height:70px;background:linear-gradient(180deg,var(--bus-red),var(--bus-red-dark));
+    clip-path:polygon(0% 100%, 8% 0%, 92% 0%, 100% 100%);}
+  .dhaba .poles{display:flex;justify-content:space-between;padding:0 8%;}
+  .dhaba .poles div{width:4px;height:56px;background:#6b5a3f;}
+  .dhaba .bulbs{position:absolute;top:-6px;left:6%;right:6%;height:14px;}
+  .dhaba .bulb{position:absolute;top:0;width:8px;height:8px;border-radius:50%;background:var(--amber);
+    box-shadow:0 0 10px 4px rgba(243,166,61,.7);animation:bulb-glow 1.8s ease-in-out infinite;}
+
+  @keyframes bulb-glow{0%,100%{opacity:.55;}50%{opacity:1;}}
+
+  .bus{position:absolute;bottom:9vh;left:50%;transform:translateX(-52%);width:min(80vw,560px);}
+  .bus svg{width:100%;height:auto;display:block;filter:drop-shadow(0 12px 18px rgba(0,0,0,.5));}
+  .headlight{animation:headlight-pulse 2.6s ease-in-out infinite;}
+  @keyframes headlight-pulse{0%,100%{opacity:.75;}50%{opacity:1;}}
+
+  /* ---------- layout ---------- */
+  .wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:1.4rem 1.4rem 3rem;}
+
+  header.topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    flex-wrap:wrap;padding-top:.6rem;}
+  .brandmark{display:flex;align-items:center;gap:.6rem;font-family:'Teko',sans-serif;
+    font-size:1.3rem;letter-spacing:.06em;color:var(--amber-soft);}
+  .brandmark .dot{width:9px;height:9px;border-radius:50%;background:#5fbf6a;box-shadow:0 0 8px 2px #5fbf6a;
+    animation:pulse-dot 1.6s ease-in-out infinite;}
+  @keyframes pulse-dot{0%,100%{opacity:.5;}50%{opacity:1;}}
+
+  .listener-count{font-family:'Share Tech Mono',monospace;font-size:.85rem;color:var(--paper-dim);
+    background:rgba(0,0,0,.28);border:1px solid rgba(242,227,198,.2);padding:.35rem .7rem;border-radius:999px;}
+  .listener-count b{color:var(--amber-soft);font-weight:700;}
+
+  /* flip board */
+  .flipboard{margin:2.2rem auto 0;max-width:640px;background:#0a0a0a;border:3px solid #1c1c1c;
+    border-radius:6px;padding:.5rem .8rem;box-shadow:0 0 0 4px #2a2a2a, 0 14px 30px rgba(0,0,0,.55);
+    perspective:600px;}
+  .flipboard .rail{font-family:'Teko',sans-serif;font-size:clamp(1.6rem,6vw,2.6rem);letter-spacing:.08em;
+    text-align:center;color:var(--amber);text-shadow:0 0 12px rgba(243,166,61,.5);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;transform-style:preserve-3d;}
+  .flipboard .rail.flip{animation:flap .5s ease;}
+  @keyframes flap{0%{transform:rotateX(0deg);opacity:1;}45%{transform:rotateX(-90deg);opacity:.2;}
+    55%{transform:rotateX(90deg);opacity:.2;}100%{transform:rotateX(0deg);opacity:1;}}
+  .flipboard .sub{text-align:center;font-family:'Share Tech Mono',monospace;font-size:.68rem;
+    letter-spacing:.2em;color:#8f8f74;margin-top:.2rem;text-transform:uppercase;}
+
+  /* hero */
+  .hero{margin-top:2.6rem;text-align:center;}
+  .hero .hi{font-family:'Mukta',sans-serif;font-weight:600;font-size:clamp(2.2rem,9vw,4rem);
+    color:var(--paper);text-shadow:0 4px 18px rgba(0,0,0,.6);line-height:1.15;}
+  .hero .en{font-family:'Teko',sans-serif;font-weight:600;letter-spacing:.14em;
+    font-size:clamp(1rem,3.6vw,1.35rem);color:var(--amber-soft);margin-top:.35rem;}
+  .hero p.tag{max-width:52ch;margin:1.1rem auto 0;color:var(--paper-dim);font-size:1.02rem;line-height:1.65;}
+  .hero p.tag em{color:var(--amber-soft);font-style:normal;}
+
+  /* route chips */
+  .routes{margin-top:2.4rem;}
+  .routes h2{font-family:'Teko',sans-serif;letter-spacing:.12em;font-size:1.05rem;color:var(--paper-dim);
+    text-transform:uppercase;text-align:center;margin-bottom:.9rem;}
+  .route-grid{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center;}
+  .route-chip{
+    font-family:'Mukta',sans-serif;font-weight:600;font-size:.92rem;color:var(--ink);
+    background:var(--paper);border:1px solid var(--paper-dim);border-radius:10px;
+    padding:.6rem 1rem;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:.1rem;
+    box-shadow:0 4px 0 var(--paper-dim);transition:transform .15s ease, box-shadow .15s ease;
+    min-width:150px;
+  }
+  .route-chip small{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.1em;
+    color:var(--bus-red-dark);text-transform:uppercase;}
+  .route-chip:hover{transform:translateY(-3px);}
+  .route-chip:active{transform:translateY(1px);box-shadow:0 1px 0 var(--paper-dim);}
+  .route-chip.active{background:var(--amber-soft);border-color:var(--amber);box-shadow:0 4px 0 var(--amber);}
+
+  /* player */
+  .player{margin:2.6rem auto 0;max-width:560px;background:linear-gradient(180deg,#2a1f14,#1a130c);
+    border:2px solid #3a2c1c;border-radius:16px;padding:1.3rem 1.3rem 1.1rem;
+    box-shadow:0 18px 40px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.03);}
+  .player .display{background:#12100a;border-radius:8px;padding:.8rem 1rem;
+    border:1px solid rgba(243,166,61,.25);}
+  .player .now-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.18em;
+    color:#6b6250;text-transform:uppercase;}
+  .player .now-title{font-family:'Mukta',sans-serif;font-weight:600;color:var(--amber-soft);
+    font-size:1.02rem;margin-top:.15rem;min-height:1.4em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .player .time-row{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;
+    font-size:.7rem;color:#8a8168;margin-top:.6rem;}
+  .player .bar{height:5px;background:#332918;border-radius:3px;margin-top:.3rem;overflow:hidden;}
+  .player .bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--amber),var(--amber-soft));}
+
+  .controls{display:flex;align-items:center;justify-content:center;gap:1.1rem;margin-top:1.1rem;}
+  .controls button{background:var(--bus-red);color:var(--paper);border:none;border-radius:50%;
+    width:52px;height:52px;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 0 var(--bus-red-dark);
+    display:flex;align-items:center;justify-content:center;transition:transform .1s ease;}
+  .controls button:active{transform:translateY(2px);box-shadow:0 2px 0 var(--bus-red-dark);}
+  .controls button.mini{width:38px;height:38px;font-size:1rem;background:transparent;box-shadow:none;
+    color:var(--paper-dim);border:1px solid rgba(242,227,198,.25);}
+  .vol-row{display:flex;align-items:center;gap:.5rem;margin-top:.9rem;justify-content:center;}
+  .vol-row input[type=range]{width:120px;accent-color:var(--amber);}
+  .vol-row span{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:#8a8168;}
+
+  #yt-player-wrap{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;}
+
+  .note{text-align:center;font-size:.82rem;color:var(--paper-dim);opacity:.75;max-width:44ch;
+    margin:1.4rem auto 0;line-height:1.6;}
+
+  footer{margin-top:3rem;text-align:center;font-size:.8rem;color:var(--paper-dim);opacity:.75;
+    line-height:1.8;padding-top:1.4rem;border-top:1px solid rgba(242,227,198,.12);}
+  footer a{color:var(--amber-soft);}
+
+  @media (max-width:520px){
+    .bus{width:92vw;}
+    .dhaba{width:44vw;}
+  }
+</style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="stars" id="stars"></div>
+  <div class="moon"></div>
+  <div class="hills"></div>
+  <div class="road"></div>
+
+  <div class="mile-marker">
+    <div class="sign">UP<br>रोडवेज़</div>
+    <div class="post"></div>
+  </div>
+
+  <div class="dhaba">
+    <div class="bulbs" id="bulbs"></div>
+    <div class="tent"></div>
+    <div class="poles"><div></div><div></div></div>
+  </div>
+
+  <div class="bus">
+    <svg viewBox="0 0 560 220" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="60" width="480" height="110" rx="14" fill="#b3312c"/>
+      <rect x="20" y="60" width="480" height="26" rx="10" fill="#f2e3c6"/>
+      <rect x="36" y="94" width="440" height="42" rx="4" fill="#1c2534"/>
+      <rect x="46" y="100" width="55" height="30" rx="3" fill="#4a6a8a"/>
+      <rect x="112" y="100" width="55" height="30" rx="3" fill="#4a6a8a"/>
+      <rect x="178" y="100" width="55" height="30" rx="3" fill="#4a6a8a"/>
+      <rect x="244" y="100" width="55" height="30" rx="3" fill="#4a6a8a"/>
+      <rect x="310" y="100" width="55" height="30" rx="3" fill="#3a2f33"/>
+      <rect x="376" y="100" width="90" height="30" rx="3" fill="#22201c"/>
+      <text x="421" y="122" font-family="Teko, sans-serif" font-size="18" fill="#f3a63d" text-anchor="middle">UP ROADWAYS</text>
+      <rect x="20" y="150" width="480" height="10" fill="#f2e3c6"/>
+      <circle class="headlight" cx="500" cy="150" r="9" fill="#fff3d0"/>
+      <circle class="headlight" cx="500" cy="150" r="20" fill="#f3a63d" opacity="0.18"/>
+      <circle cx="120" cy="182" r="24" fill="#161616"/><circle cx="120" cy="182" r="9" fill="#4a4a4a"/>
+      <circle cx="400" cy="182" r="24" fill="#161616"/><circle cx="400" cy="182" r="9" fill="#4a4a4a"/>
+      <rect x="0" y="150" width="24" height="18" rx="4" fill="#7e211d"/>
+      <text x="500" y="76" font-family="Mukta, sans-serif" font-weight="700" font-size="15" fill="#241810" text-anchor="end">लखनऊ · UP-32</text>
+    </svg>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brandmark"><span class="dot"></span> ऑन एयर · लाइव</div>
+    <div class="listener-count"><b id="listenerNum">142</b> यात्री सुन रहे हैं</div>
+  </header>
+
+  <div class="flipboard">
+    <div class="rail" id="flipRail">UP ROADWAYS</div>
+    <div class="sub">डेस्टिनेशन बोर्ड</div>
+  </div>
+
+  <div class="hero">
+    <div class="hi">यूपी रोडवेज़</div>
+    <div class="en">UP ROADWAYS &middot; चलती रहेगी, रात भर</div>
+    <p class="tag">90s की हिंदी फ़िल्मी गानों की वो कैसेट, जो रात की बस में <em>कभी खत्म नहीं होती</em> — कंडक्टर की सीटी, ढाबे की चाय और हेडलाइट में दौड़ती सड़क के साथ बजती हुई।</p>
+  </div>
+
+  <div class="routes">
+    <h2>रूट्स</h2>
+    <div class="route-grid" id="routeGrid">
+      <button class="route-chip active" data-route="Night Bus" data-playlist="PLcggtav10zeqaqM2nFaXkjCJe9cFYnZS0"><small>रूट 01</small>रात की गाड़ी</button>
+      <button class="route-chip" data-route="Dhaba Classics" data-playlist="PLwe4fFMaJo2c-Cj5DlnKEvbI3v29dBkP3"><small>रूट 02</small>ढाबा क्लासिक्स</button>
+      <button class="route-chip" data-route="Highway Dard" data-playlist="PLO6WOx_nE9UICeoY5-Y4kK1FSAP9Jxd1w"><small>रूट 03</small>हाईवे दर्द</button>
+      <button class="route-chip" data-route="Shaadi Express" data-playlist="PL4OqLl4qvLkdnhB9NBnW2QqyGVteCWRAn"><small>रूट 04</small>शादी एक्सप्रेस</button>
+    </div>
+  </div>
+
+  <div class="player">
+    <div class="display">
+      <div class="now-label">now boarding</div>
+      <div class="now-title" id="nowTitle">Tuning in…</div>
+      <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+      <div class="time-row"><span id="curTime">0:00</span><span id="durTime">0:00</span></div>
+    </div>
+    <div class="controls">
+      <button class="mini" id="prevBtn" title="पिछला गाना">⏮</button>
+      <button id="playBtn" title="Play / Pause">▶</button>
+      <button class="mini" id="nextBtn" title="अगला गाना">⏭</button>
+    </div>
+    <div class="vol-row">
+      <span>आवाज़</span>
+      <input type="range" id="volSlider" min="0" max="100" value="70">
+    </div>
+  </div>
+
+  <p class="note">गाना YouTube के प्लेयर से बजता है। यहां कुछ भी होस्ट नहीं है — सारे अधिकार लेबल, संगीतकार और गायकों के पास हैं।</p>
+
+  <div id="yt-player-wrap"><div id="yt-player"></div></div>
+
+  <footer>
+    UP Roadways &mdash; एक ambient रेडियो, SHIVAM YADAV द्वारा।<br>
+    © 2026 UP Roadways
+  </footer>
+
+</div>
+
+<script>
+  // stars
+  const starsEl = document.getElementById('stars');
+  for(let i=0;i<70;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*55+'%';
+    s.style.animationDelay=(Math.random()*3.5)+'s';
+    starsEl.appendChild(s);
+  }
+  // dhaba bulbs
+  const bulbsEl = document.getElementById('bulbs');
+  for(let i=0;i<7;i++){
+    const b=document.createElement('div');
+    b.className='bulb';
+    b.style.left=(i*15)+'%';
+    b.style.animationDelay=(i*0.25)+'s';
+    bulbsEl.appendChild(b);
+  }
+
+  // flip board
+  const flipWords = ["UP ROADWAYS","यूपी रोडवेज़","NIGHT BUS · रात 11:40","अभी चल रही है"];
+  let flipIdx = 0;
+  const flipRail = document.getElementById('flipRail');
+  setInterval(()=>{
+    flipIdx = (flipIdx+1) % flipWords.length;
+    flipRail.classList.remove('flip'); void flipRail.offsetWidth; flipRail.classList.add('flip');
+    setTimeout(()=>{ flipRail.textContent = flipWords[flipIdx]; }, 220);
+  }, 3600);
+
+  // listener count random walk
+  let listeners = 142;
+  const listenerNum = document.getElementById('listenerNum');
+  setInterval(()=>{
+    listeners += Math.floor(Math.random()*5)-2;
+    listeners = Math.max(58, Math.min(340, listeners));
+    listenerNum.textContent = listeners;
+  }, 2600);
+
+  // route chips (cosmetic route switch + toast on now-title)
+  const chips = document.querySelectorAll('.route-chip');
+  const nowTitle = document.getElementById('nowTitle');
+  chips.forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      chips.forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      nowTitle.textContent = 'Now on ' + chip.dataset.route + '…';
+      const listId = chip.dataset.playlist;
+      if(ytPlayer && ytPlayer.loadPlaylist && listId){
+        ytPlayer.loadPlaylist({ listType:'playlist', list: listId });
+      }
+    });
+  });
+
+  // ---- YouTube IFrame Player ----
+  let ytPlayer, isPlaying=false, progressTimer;
+  const PLAYLIST_ID = 'PLcggtav10zeqaqM2nFaXkjCJe9cFYnZS0';
+
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(tag);
+
+  window.onYouTubeIframeAPIReady = function(){
+    ytPlayer = new YT.Player('yt-player', {
+      height:'1', width:'1',
+      playerVars:{ listType:'playlist', list: PLAYLIST_ID, autoplay:0, controls:0 },
+      events:{
+        onReady: (e)=>{ e.target.setVolume(70); },
+        onStateChange: onPlayerStateChange
+      }
+    });
+  };
+
+  function fmt(t){
+    t = Math.max(0, Math.floor(t||0));
+    const m = Math.floor(t/60), s = t%60;
+    return m + ':' + (s<10?'0':'') + s;
+  }
+
+  function onPlayerStateChange(e){
+    if(e.data === YT.PlayerState.PLAYING){
+      isPlaying = true;
+      playBtn.textContent = '⏸';
+      try{ nowTitle.textContent = ytPlayer.getVideoData().title || 'Playing…'; }catch(err){}
+      clearInterval(progressTimer);
+      progressTimer = setInterval(updateProgress, 500);
+    } else {
+      isPlaying = false;
+      playBtn.textContent = '▶';
+      clearInterval(progressTimer);
+    }
+  }
+
+  function updateProgress(){
+    if(!ytPlayer || !ytPlayer.getDuration) return;
+    const dur = ytPlayer.getDuration();
+    const cur = ytPlayer.getCurrentTime();
+    document.getElementById('durTime').textContent = fmt(dur);
+    document.getElementById('curTime').textContent = fmt(cur);
+    document.getElementById('barFill').style.width = (dur ? (cur/dur*100) : 0) + '%';
+    if(dur > 900 && ytPlayer.nextVideo){ ytPlayer.nextVideo(); } // skip anything over 15 min — not a single song
+  }
+
+  const playBtn = document.getElementById('playBtn');
+  playBtn.addEventListener('click', ()=>{
+    if(!ytPlayer || !ytPlayer.playVideo) return;
+    if(isPlaying){ ytPlayer.pauseVideo(); } else { ytPlayer.playVideo(); }
+  });
+  document.getElementById('nextBtn').addEventListener('click', ()=>{ ytPlayer && ytPlayer.nextVideo && ytPlayer.nextVideo(); });
+  document.getElementById('prevBtn').addEventListener('click', ()=>{ ytPlayer && ytPlayer.previousVideo && ytPlayer.previousVideo(); });
+  document.getElementById('volSlider').addEventListener('input', (e)=>{
+    if(ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(e.target.value);
+  });
+</script>
+</body>
+</html>
